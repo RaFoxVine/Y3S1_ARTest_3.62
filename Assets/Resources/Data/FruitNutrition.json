@@ -1,0 +1,24 @@
+{
+  "fruits": [
+    {
+      "name": "apple",
+      "displayName": "Apple",
+      "calories": 52,
+      "carbs": 14.0,
+      "fiber": 2.4,
+      "sugar": 10.0,
+      "vitamin_c": 7,
+      "description": "Rich in Vitamin C and dietary fiber. Supports digestive health."
+    },
+    {
+      "name": "banana",
+      "displayName": "Banana",
+      "calories": 89,
+      "carbs": 23.0,
+      "fiber": 2.6,
+      "sugar": 12.0,
+      "potassium": 358,
+      "description": "High in potassium. Helps maintain heart health and muscle function."
+    }
+  ]
+}

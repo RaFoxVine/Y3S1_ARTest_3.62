@@ -2,7 +2,7 @@
   "fruits": {
     "apple": {
       "displayName": "Apple",
-      "modelPath": "Models/Apple",
+      "modelPath": "Prefabs/Apple",
       "nutrition": {
         "calories": 52,
         "carbs": 14.0,
@@ -14,7 +14,7 @@
     },
     "banana": {
       "displayName": "Banana",
-      "modelPath": "Models/Banana",
+      "modelPath": "Prefabs/Banana",
       "nutrition": {
         "calories": 89,
         "carbs": 23.0,
@@ -26,7 +26,7 @@
     },
     "Orange": {
       "displayName": "Orange",
-      "modelPath": "Models/Orange",
+      "modelPath": "Prefabs/Orange",
       "nutrition": {
         "calories": 89,
         "carbs": 23.0,

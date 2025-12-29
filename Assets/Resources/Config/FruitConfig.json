@@ -1,0 +1,40 @@
+{
+  "fruits": {
+    "apple": {
+      "displayName": "Apple",
+      "modelPath": "Models/Apple",
+      "nutrition": {
+        "calories": 52,
+        "carbs": 14.0,
+        "fiber": 2.4,
+        "sugar": 10.0,
+        "vitamin_c": 7,
+        "description": "Rich in fiber and Vitamin C. Supports digestive health."
+      }
+    },
+    "banana": {
+      "displayName": "Banana",
+      "modelPath": "Models/Banana",
+      "nutrition": {
+        "calories": 89,
+        "carbs": 23.0,
+        "fiber": 2.6,
+        "sugar": 12.0,
+        "potassium": 358,
+        "description": "Great source of potassium. Helps maintain heart health."
+      }
+    },
+    "Orange": {
+      "displayName": "Orange",
+      "modelPath": "Models/Orange",
+      "nutrition": {
+        "calories": 89,
+        "carbs": 23.0,
+        "fiber": 2.6,
+        "sugar": 12.0,
+        "potassium": 358,
+        "description": "Great source of Orange. Helps maintain heart health."
+      }
+    }
+  }
+}

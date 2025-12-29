@@ -9,6 +9,7 @@ using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.XR.ARSubsystems.XRCpuImage;
 using TMPro;
 
+
 using Unity.Collections;  // 用于 NativeArray
 using UnityEngine.XR.ARSubsystems;  // 用于 XRCpuImage
 
@@ -28,9 +29,9 @@ public class FruitDetectionManager : MonoBehaviour
     [SerializeField] private Transform detectionBoxContainer;
     [SerializeField] private GameObject detectionBoxPrefab;
 
-    [Header("3D 模型")]
-    [SerializeField] private GameObject appleModel;   // 改为直接引用场景中的物体
-    [SerializeField] private GameObject bananaModel;  // 改为直接引用场景中的物体
+    //[Header("3D 模型")]
+    //[SerializeField] private GameObject appleModel;   // 改为直接引用场景中的物体
+    //[SerializeField] private GameObject bananaModel;  // 改为直接引用场景中的物体
 
     [Header("营养信息")]
     [SerializeField] private NutritionDisplayManager nutritionDisplay;
@@ -56,6 +57,8 @@ public class FruitDetectionManager : MonoBehaviour
 
     private List<string> logMessages = new List<string>();
 
+    private string currentFruitLabel = "";  // 记录当前显示的水果类型
+
     void Start()
     {
         // 创建用于截图的纹理
@@ -64,24 +67,6 @@ public class FruitDetectionManager : MonoBehaviour
         // 获取 ARCameraBackground 组件
         cameraBackground = arCameraManager.GetComponent<ARCameraBackground>();
 
-        // 验证模型引用
-        if (appleModel == null)
-        {
-            AddLog("[WARN] AppleModel 未分配");
-        }
-        else
-        {
-            appleModel.SetActive(false);  // 初始隐藏
-        }
-
-        if (bananaModel == null)
-        {
-            AddLog("[WARN] BananaModel 未分配");
-        }
-        else
-        {
-            bananaModel.SetActive(false);  // 初始隐藏
-        }
 
         // 验证必要组件
         if (arCameraManager == null)
@@ -113,13 +98,6 @@ public class FruitDetectionManager : MonoBehaviour
         }
 
         AddLog($"URL:'{serverUrl}'");
-        AddLog($"URL Length {serverUrl.Length}");
-        AddLog($"URL First Character ASCII: {(int)serverUrl[0]}");
-
-        AddLog($"[FruitDetection] 初始化完成");
-        AddLog($"[FruitDetection] 服务端地址: {serverUrl}");
-        AddLog($"[FruitDetection] 截图间隔: {captureInterval}秒");
-        AddLog($"[FruitDetection] 截图分辨率: {CAPTURE_WIDTH}x{CAPTURE_HEIGHT}");
 
         lastCaptureTime = Time.time + 1f;
     }
@@ -149,12 +127,12 @@ public class FruitDetectionManager : MonoBehaviour
         if (!arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage cpuImage))
         {
             if (showDebugInfo)
-                AddLog("[WARN] 无法获取相机图像");
+                AddLog("[WARN] Cant get Camera Image");
             isProcessing = false;
             yield break;
         }
 
-        AddLog($"获取到相机图像: {cpuImage.width}x{cpuImage.height}, 格式: {cpuImage.format}");
+        //AddLog($"获取到相机图像: {cpuImage.width}x{cpuImage.height}, 格式: {cpuImage.format}");
 
         //// 检查图像是否需要旋转
         //needsRotation = false;
@@ -212,13 +190,11 @@ public class FruitDetectionManager : MonoBehaviour
                 request.SetRequestHeader("Content-Type", "image/jpeg");
                 request.timeout = 5;
 
-                AddLog("发送请求到服务端...");
-
                 yield return request.SendWebRequest();
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    AddLog($"[ERROR] 请求失败: {request.error}");
+                    AddLog($"[ERROR] Request Fail: {request.error}");
                     AddLog($"[ERROR] Code: {request.responseCode}");
                     isProcessing = false;
                     buffer.Dispose();
@@ -229,7 +205,7 @@ public class FruitDetectionManager : MonoBehaviour
                 string jsonResponse = request.downloadHandler.text;
 
                 if (showDebugInfo)
-                    AddLog($"收到响应: {jsonResponse}");
+                    AddLog($"Receive Respond : {jsonResponse}");
 
                 try
                 {
@@ -237,7 +213,7 @@ public class FruitDetectionManager : MonoBehaviour
 
                     if (!response.success)
                     {
-                        AddLog($"[ERROR] 服务端错误: {response.error}");
+                        AddLog($"[ERROR] Server Error {response.error}");
                         isProcessing = false;
                         buffer.Dispose();
                         cpuImage.Dispose();
@@ -248,7 +224,7 @@ public class FruitDetectionManager : MonoBehaviour
                 }
                 catch (Exception e)
                 {
-                    AddLog($"[ERROR] JSON 解析失败: {e.Message}");
+                    AddLog($"[ERROR] JSON Resolve Fail: {e.Message}");
                 }
             }
         }
@@ -262,35 +238,43 @@ public class FruitDetectionManager : MonoBehaviour
         isProcessing = false;
     }
 
+    /// <summary>
+    /// 更新检测框和 3D 模型
+    /// </summary>
     void UpdateDetectionUI(Detection[] detections)
     {
-        // 清除旧的检测框
+        // === 1. 检测框：每次都清除并重新绘制 ===
         foreach (var box in currentBoxes)
         {
             Destroy(box);
         }
         currentBoxes.Clear();
 
-        // 先隐藏所有模型
-        if (appleModel != null)
-            appleModel.SetActive(false);
-        if (bananaModel != null)
-            bananaModel.SetActive(false);
-
-        // 如果没有检测结果，直接返回
+        // === 2. 处理无检测结果的情况 ===
         if (detections == null || detections.Length == 0)
         {
             if (showDebugInfo)
-                AddLog("未检测到水果");
+                AddLog("No fruit detected");
 
-            // 隐藏营养信息
-            if (nutritionDisplay != null)
-                nutritionDisplay.HideNutrition();
+            // 如果之前有水果显示，现在需要隐藏
+            if (!string.IsNullOrEmpty(currentFruitLabel))
+            {
+                FruitConfigManager.Instance.HideAllModels();
+
+                // 隐藏营养信息
+                if (nutritionDisplay != null)
+                    nutritionDisplay.HideNutrition();
+
+                // 清空当前水果标签
+                currentFruitLabel = "";
+
+                AddLog("Models hidden");
+            }
 
             return;
         }
 
-        // 取置信度最高的检测结果
+        // === 3. 有检测结果：找到置信度最高的 ===
         Detection bestDetection = detections[0];
         foreach (var det in detections)
         {
@@ -298,21 +282,38 @@ public class FruitDetectionManager : MonoBehaviour
                 bestDetection = det;
         }
 
-        AddLog($"检测到: {bestDetection.label} (置信度: {bestDetection.confidence:F2})");
+        AddLog($"Detected: {bestDetection.label} ({bestDetection.confidence:F2})");
 
-        // 绘制检测框
+        // === 4. 检测框：总是绘制（位置可能变化）===
         DrawDetectionBox(bestDetection);
 
-        // 显示对应的 3D 模型
-        ShowFruitModel(bestDetection.label);
-
-        if (nutritionDisplay != null)
+        // === 5. 模型和营养信息：只在水果类型变化时更新 ===
+        if (bestDetection.label != currentFruitLabel)
         {
-            nutritionDisplay.ShowNutrition(bestDetection.label);
+            AddLog($"Fruit type changed: {currentFruitLabel} -> {bestDetection.label}");
+
+            // 显示新的模型
+            ShowFruitModel(bestDetection.label);
+
+            // 显示新的营养信息
+            if (nutritionDisplay != null)
+            {
+                nutritionDisplay.ShowNutrition(bestDetection.label);
+            }
+
+            // 更新当前水果标签
+            currentFruitLabel = bestDetection.label;
+        }
+        else
+        {
+            // 水果类型没变，只需要更新检测框位置
+            // 模型和营养信息保持不变
+            if (showDebugInfo)
+                AddLog($"Same fruit, keeping model state");
         }
     }
     /// <summary>
-    /// 绘制检测框
+    /// 绘制检测框（简化版本 - 使用归一化坐标）
     /// </summary>
     void DrawDetectionBox(Detection detection)
     {
@@ -321,133 +322,74 @@ public class FruitDetectionManager : MonoBehaviour
 
         if (boxRect == null)
         {
-            AddLog("[ERROR] DetectionBoxPrefab 缺少 RectTransform！");
+            AddLog("[ERROR] DetectionBoxPrefab missing RectTransform!");
             Destroy(boxObj);
             return;
         }
 
-        // === 诊断信息 ===
+        // 获取屏幕尺寸
         float screenWidth = Screen.width;
         float screenHeight = Screen.height;
 
-        AddLog($"Screen Resolution {screenWidth}x{screenHeight}");
-        AddLog($"Origin box: [{detection.box[0]}, {detection.box[1]}, {detection.box[2]}, {detection.box[3]}]");
+        // 服务端返回归一化坐标 [x1, y1, x2, y2]，范围 0-1
+        // 坐标系：左上角原点，X 向右，Y 向下
+        float normX1 = detection.box[0];
+        float normY1 = detection.box[1];
+        float normX2 = detection.box[2];
+        float normY2 = detection.box[3];
 
-        // === 关键修改：检查是否需要旋转坐标 ===
-        bool isPortrait = screenHeight > screenWidth;
-        bool imageIsLandscape = CAPTURE_WIDTH > CAPTURE_HEIGHT;  // 640 > 480，是横向
+        if (showDebugInfo)
+            AddLog($"Normalized box: [{normX1:F3}, {normY1:F3}, {normX2:F3}, {normY2:F3}]");
 
-        float x1, y1, x2, y2;
+        // 转换为屏幕像素坐标
+        float x1 = normX1 * screenWidth;
+        float y1 = normY1 * screenHeight;
+        float x2 = normX2 * screenWidth;
+        float y2 = normY2 * screenHeight;
 
-        if (isPortrait && imageIsLandscape)
-        {
-            // 图像被旋转了 90° 顺时针
-            // 需要反向旋转坐标
-            AddLog("Apply Rotation");
-
-            // 原始坐标（图像坐标系）
-            int origX1 = detection.box[0];
-            int origY1 = detection.box[1];
-            int origX2 = detection.box[2];
-            int origY2 = detection.box[3];
-
-            // === 修正：逆时针旋转 90° ===
-            // 变换公式：(x, y) → (HEIGHT - y, x)
-            // 其中 HEIGHT 是图像高度（480）
-            x1 = CAPTURE_HEIGHT - origY2;  // 480 - y2
-            y1 = origX1;
-            x2 = CAPTURE_HEIGHT - origY1;  // 480 - y1
-            y2 = origX2;
-
-            // 缩放到屏幕分辨率（注意：宽高对调）
-            float scaleX = screenWidth / (float)CAPTURE_HEIGHT;   // 屏幕宽 / 图像高
-            float scaleY = screenHeight / (float)CAPTURE_WIDTH;   // 屏幕高 / 图像宽
-
-            x1 *= scaleX;
-            y1 *= scaleY;
-            x2 *= scaleX;
-            y2 *= scaleY;
-
-
-        }
-        else
-        {
-            // 不需要旋转，正常处理
-            AddLog("No need Rotation");
-
-            float scaleX = screenWidth / (float)CAPTURE_WIDTH;
-            float scaleY = screenHeight / (float)CAPTURE_HEIGHT;
-
-            x1 = detection.box[0] * scaleX;
-            y1 = detection.box[1] * scaleY;
-            x2 = detection.box[2] * scaleX;
-            y2 = detection.box[3] * scaleY;
-        }
-
-        // === 反向修正（因为上下左右反了）===
-        // 翻转 X 轴
-        float tempX1 = screenWidth - x1;
-        float tempX2 = screenWidth - x2;
-        x1 = Mathf.Min(tempX1, tempX2);
-        x2 = Mathf.Max(tempX1, tempX2);
-
-        // 翻转 Y 轴
-        float tempY1 = screenHeight - y1;
-        float tempY2 = screenHeight - y2;
-        y1 = Mathf.Min(tempY1, tempY2);
-        y2 = Mathf.Max(tempY1, tempY2);
-
-        //AddLog($"转换后 box: x1={x1:F0}, y1={y1:F0}, x2={x2:F0}, y2={y2:F0}");
-
-
-        // 3. 计算中心点和尺寸
+        // 计算中心点和尺寸
         float centerX = (x1 + x2) / 2f;
         float centerY_ImageSpace = (y1 + y2) / 2f;  // 图像坐标系（左上角原点）
         float width = x2 - x1;
         float height = y2 - y1;
 
-        // 4. 转换到 UI 坐标系（左下角原点）
+        // 转换到 Unity UI 坐标系（左下角原点，Y 向上）
         float centerY_UISpace = screenHeight - centerY_ImageSpace;
 
-        AddLog($"Center(UI): ({centerX:F0}, {centerY_UISpace:F0}), 尺寸: {width:F0}x{height:F0}");
+        if (showDebugInfo)
+            AddLog($"Box center (UI): ({centerX:F0}, {centerY_UISpace:F0}), size: {width:F0}x{height:F0}");
 
-        // === 设置 RectTransform ===
-        // 锚点设置为左下角 (0, 0)
+        // 设置 RectTransform
         boxRect.anchorMin = new Vector2(0, 0);
         boxRect.anchorMax = new Vector2(0, 0);
         boxRect.pivot = new Vector2(0.5f, 0.5f);
-
-        // 设置位置和大小
         boxRect.anchoredPosition = new Vector2(centerX, centerY_UISpace);
         boxRect.sizeDelta = new Vector2(width, height);
 
         currentBoxes.Add(boxObj);
-
-        //AddLog($"检测框已绘制");
     }
 
     /// <summary>
-    /// 实例化水果 3D 模型
-    /// </summary>
-    /// <summary>
     /// 显示对应的水果模型
     /// </summary>
-    void ShowFruitModel(string label)
+    /// <summary>
+    /// 显示对应的水果模型（配置驱动）
+    /// </summary>
+    void ShowFruitModel(string fruitId)
     {
-        if (label == "apple" && appleModel != null)
+        // 隐藏所有模型
+        FruitConfigManager.Instance.HideAllModels();
+
+        // 获取或加载指定模型
+        GameObject model = FruitConfigManager.Instance.GetOrLoadModel(fruitId);
+        if (model != null)
         {
-            appleModel.SetActive(true);
-            AddLog("已显示苹果模型");
-        }
-        else if (label == "banana" && bananaModel != null)
-        {
-            bananaModel.SetActive(true);
-            AddLog("已显示香蕉模型");
+            model.SetActive(true);
+            AddLog($"Showing {fruitId} model");
         }
         else
         {
-            if (showDebugInfo)
-                AddLog($"[WARN] 未找到 {label} 的模型");
+            AddLog($"[ERROR] Failed to load model: {fruitId}");
         }
     }
 
@@ -504,5 +446,5 @@ public class Detection
 {
     public string label;
     public float confidence;
-    public int[] box; // [x1, y1, x2, y2]
+    public float[] box;  // 改为 float[]，接收归一化坐标 (0-1 范围)
 }

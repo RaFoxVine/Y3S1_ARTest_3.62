@@ -29,9 +29,12 @@ public class FruitDetectionManager : MonoBehaviour
     [SerializeField] private Transform detectionBoxContainer;
     [SerializeField] private GameObject detectionBoxPrefab;
 
-    //[Header("3D 模型")]
-    //[SerializeField] private GameObject appleModel;   // 改为直接引用场景中的物体
-    //[SerializeField] private GameObject bananaModel;  // 改为直接引用场景中的物体
+    [Header("3D Models")]
+    [SerializeField] private GameObject appleModel;   // 手动拖拽 Prefab 引用
+    [SerializeField] private GameObject bananaModel;  // 手动拖拽 Prefab 引用
+    [SerializeField] private GameObject orangeModel;  // 手动拖拽 Prefab 引用
+
+
 
     [Header("营养信息")]
     [SerializeField] private NutritionDisplayManager nutritionDisplay;
@@ -259,7 +262,11 @@ public class FruitDetectionManager : MonoBehaviour
             // 如果之前有水果显示，现在需要隐藏
             if (!string.IsNullOrEmpty(currentFruitLabel))
             {
-                FruitConfigManager.Instance.HideAllModels();
+                // 隐藏所有模型
+                if (appleModel != null)
+                    appleModel.SetActive(false);
+                if (bananaModel != null)
+                    bananaModel.SetActive(false);
 
                 // 隐藏营养信息
                 if (nutritionDisplay != null)
@@ -372,24 +379,31 @@ public class FruitDetectionManager : MonoBehaviour
     /// <summary>
     /// 显示对应的水果模型
     /// </summary>
-    /// <summary>
-    /// 显示对应的水果模型（配置驱动）
-    /// </summary>
     void ShowFruitModel(string fruitId)
     {
-        // 隐藏所有模型
-        FruitConfigManager.Instance.HideAllModels();
+        // 先隐藏所有模型
+        if (appleModel != null)
+            appleModel.SetActive(false);
+        if (bananaModel != null)
+            bananaModel.SetActive(false);
+        if (orangeModel != null) orangeModel.SetActive(false);  // 新增
 
-        // 获取或加载指定模型
-        GameObject model = FruitConfigManager.Instance.GetOrLoadModel(fruitId);
-        if (model != null)
+        // 显示对应的模型
+        if (fruitId == "apple" && appleModel != null)
         {
-            model.SetActive(true);
-            AddLog($"Showing {fruitId} model");
+            appleModel.SetActive(true);
+            AddLog("Showing Apple model");
         }
-        else
+        else if (fruitId == "banana" && bananaModel != null)
         {
-            AddLog($"[ERROR] Failed to load model: {fruitId}");
+            bananaModel.SetActive(true);
+            AddLog("Showing Banana model");
+        }
+        else if (fruitId == "orange" && orangeModel != null)  // 新增
+        {
+            orangeModel.SetActive(true);
+            AddLog("Showing Orange model");
+
         }
     }
 

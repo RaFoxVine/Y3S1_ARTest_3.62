@@ -10,45 +10,11 @@ public class NutritionDisplayManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nutritionInfoText;
     [SerializeField] private TextMeshProUGUI descriptionText;
 
-    //[Header("Data Config")]
-    //[SerializeField] private TextAsset nutritionJsonFile;
-
-    //private FruitNutritionDatabase nutritionDatabase;
-    //private Dictionary<string, FruitData> fruitDataDict = new Dictionary<string, FruitData>();
-
     void Start()
     {
         if (nutritionPanel != null)
             nutritionPanel.SetActive(false);
-
-        //LoadNutritionData();
     }
-
-    //void LoadNutritionData()
-    //{
-    //    if (nutritionJsonFile == null)
-    //    {
-    //        Debug.LogError("[NutritionDisplay] JSON file not assigned!");
-    //        return;
-    //    }
-
-    //    try
-    //    {
-    //        nutritionDatabase = JsonUtility.FromJson<FruitNutritionDatabase>(nutritionJsonFile.text);
-
-    //        fruitDataDict.Clear();
-    //        foreach (var fruit in nutritionDatabase.fruits)
-    //        {
-    //            fruitDataDict[fruit.name] = fruit;
-    //        }
-
-    //        Debug.Log($"[NutritionDisplay] Loaded {fruitDataDict.Count} fruits");
-    //    }
-    //    catch (System.Exception e)
-    //    {
-    //        Debug.LogError($"[NutritionDisplay] JSON parse failed: {e.Message}");
-    //    }
-    //}
 
     /// <summary>
     /// 显示指定水果的营养信息（从配置管理器获取）

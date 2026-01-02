@@ -1,40 +1,66 @@
 {
-  "fruits": {
-    "apple": {
-      "displayName": "Apple",
-      "modelPath": "Prefabs/Apple",
-      "nutrition": {
-        "calories": 52,
-        "carbs": 14.0,
-        "fiber": 2.4,
-        "sugar": 10.0,
-        "vitamin_c": 7,
-        "description": "Rich in fiber and Vitamin C. Supports digestive health."
-      }
-    },
-    "banana": {
-      "displayName": "Banana",
-      "modelPath": "Prefabs/Banana",
-      "nutrition": {
-        "calories": 89,
-        "carbs": 23.0,
-        "fiber": 2.6,
-        "sugar": 12.0,
-        "potassium": 358,
-        "description": "Great source of potassium. Helps maintain heart health."
-      }
-    },
-    "Orange": {
-      "displayName": "Orange",
-      "modelPath": "Prefabs/Orange",
-      "nutrition": {
-        "calories": 89,
-        "carbs": 23.0,
-        "fiber": 2.6,
-        "sugar": 12.0,
-        "potassium": 358,
-        "description": "Great source of Orange. Helps maintain heart health."
-      }
+    "fruits": {
+        "apple": {
+            "displayName": "apple",
+            "modelPath": "Prefabs/Apple",
+            "nutrition": {
+                "calories": 52,
+                "carbs": 14.0,
+                "fiber": 2.4,
+                "sugar": 10.0,
+                "vitamin_c": 7,
+                "description": "Rich in fiber and Vitamin C. Supports digestive health."
+            }
+        },
+        "banana": {
+            "displayName": "banana",
+            "modelPath": "Prefabs/Banana",
+            "nutrition": {
+                "calories": 89,
+                "carbs": 23.0,
+                "fiber": 2.6,
+                "sugar": 12.0,
+                "potassium": 358,
+                "description": "Great source of potassium. Helps maintain heart health."
+            }
+        },
+        "orange": {
+            "displayName": "orange",
+            "modelPath": "Prefabs/Orange",
+            "nutrition": {
+                "calories": 47,
+                "carbs": 12.0,
+                "fiber": 2.4,
+                "sugar": 9.0,
+                "vitamin_c": 70,
+                "description": "Excellent source of Vitamin C. Boosts immune system and skin health."
+            }
+        },
+        "DragonFruit": {
+            "displayName": "DragonFruit",
+            "modelPath": "Prefabs/DragonFruit",
+            "nutrition": {
+                "calories": 60,
+                "carbs": 13.0,
+                "fiber": 3.0,
+                "sugar": 8.0,
+                "magnesium": 20,
+                "antioxidants": "high",
+                "description": "Rich in antioxidants and magnesium. Supports gut health and provides prebiotic fiber."
+            }
+        },
+        "Watermelon": {
+            "displayName": "Watermelon",
+            "modelPath": "Prefabs/Watermelon",
+            "nutrition": {
+                "calories": 30,
+                "carbs": 8.0,
+                "fiber": 0.4,
+                "sugar": 6.0,
+                "water_content": 92,
+                "lycopene": "high",
+                "description": "High water content keeps you hydrated. Rich in lycopene, an antioxidant that promotes heart health."
+            }
+        }
     }
-  }
 }
